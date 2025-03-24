@@ -8,11 +8,23 @@ export default function Page() {
   // Use the useUserAuth hook to get the user object and the login and logout functions
   const { user, gitHubSignIn, firebaseSignOut } = useUserAuth();
 
-  // // Sign in to Firebase with GitHub authentication
-  // await gitHubSignIn();
+  // Async function to handle sign-in
+  const handleSignIn = async () => {
+    try {
+      await gitHubSignIn();
+    } catch (error) {
+      console.error("Error signing in:", error);
+    }
+  };
 
-  // // Sign out of Firebase
-  // await firebaseSignOut();
+  // Async function to handle sign-out
+  const handleSignOut = async () => {
+    try {
+      await firebaseSignOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <main>
