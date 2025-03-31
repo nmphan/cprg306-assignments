@@ -1,18 +1,48 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NewItem from "./new-item";
 import ItemList from "./item-list";
 import MealIdeas from "./meal-ideas";
-import itemsData from "./items.json";
 import { useUserAuth } from "../_utils/auth-context";
+import { getItems, addItem } from "../_services/shopping-list-service";
 
 export default function Page() {
-  const [items, setItems] = useState(itemsData);
+  const [items, setItems] = useState([]);
   const [selectedItemName, setSelectedItemName] = useState("");
   const { user } = useUserAuth();
+  const [loading, setLoading] = useState(true);
 
-  const handleAddItem = (newItem) => {
-    setItems([...items, newItem]);
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const loadItems = async () => {
+      try {
+        setLoading(true);
+        const items = await getItems(user.uid);
+        setItems(items);
+      } catch (error) {
+        console.error("Failed to load items:", error);
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadItems();
+  }, [user]);
+
+  const handleAddItem = async (newItem) => {
+    if (!user) return;
+    
+    try {
+      await addItem(user.uid, newItem);
+      setItems(prevItems => [...prevItems, newItem]);
+    } catch (error) {
+      console.error("Failed to add item:", error);
+    }
   };
 
   const handleItemSelect = (item) => {
@@ -22,6 +52,7 @@ export default function Page() {
       .replace(/\p{Emoji}/gu, "");
     //console.log("Selected ingredient:", cleanedName);
     setSelectedItemName(cleanedName);
+
   };
 
   return user ? (
@@ -38,4 +69,6 @@ export default function Page() {
   ) : (
     <p>Your need to be signed in to view this page.</p>
   );
-}
+  }
+
+
