@@ -4,35 +4,18 @@ import NewItem from "./new-item";
 import ItemList from "./item-list";
 import MealIdeas from "./meal-ideas";
 import { useUserAuth } from "../_utils/auth-context";
-import { getItems, addItem } from "../_services/shopping-list-service";
+import { getItems, addItem, loadItems } from "../_services/shopping-list-service";
 
 export default function Page() {
   const [items, setItems] = useState([]);
   const [selectedItemName, setSelectedItemName] = useState("");
   const { user } = useUserAuth();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
+    if (user?.uid) {
+      loadItems(user.uid, setItems);
     }
-
-    const loadItems = async () => {
-      try {
-        setLoading(true);
-        const items = await getItems(user.uid);
-        setItems(items);
-      } catch (error) {
-        console.error("Failed to load items:", error);
-        setItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadItems();
-  }, [user]);
+  }, [user?.uid]);
 
   const handleAddItem = async (newItem) => {
     if (!user) return;
